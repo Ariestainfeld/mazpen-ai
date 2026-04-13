@@ -339,6 +339,7 @@ def create_telegram_summary(content):
 
 def main():
     print(f"[{datetime.now()}] Starting AI Daily Briefing...")
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Step 1: Research
     print("Researching AI news...")
