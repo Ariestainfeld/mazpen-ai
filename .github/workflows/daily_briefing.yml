@@ -1,0 +1,39 @@
+name: מצפן AI — סקירה יומית
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 07:00 Israel time (UTC+3)
+  workflow_dispatch:        # Manual trigger from GitHub
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Needed to commit seen_urls.json back
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily briefing
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python ai_daily_briefing.py
+
+      - name: Save seen_urls.json back to repo
+        run: |
+          git config user.name "Mazpen AI Bot"
+          git config user.email "bot@mazpen.ai"
+          git add seen_urls.json
+          git diff --staged --quiet || git commit -m "Update seen_urls [skip ci]"
+          git push
